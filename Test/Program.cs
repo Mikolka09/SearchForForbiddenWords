@@ -224,7 +224,7 @@ namespace Test
                             .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
                             if (st == it.Name)
                             {
-                                text[i].Replace($"{st}", $"{change}");
+                                text[i] = text[i].Replace($"{st}", $"{change}");
                                 it.Count++;
                             }
                         }
