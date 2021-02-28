@@ -35,6 +35,9 @@ namespace SearchForForbiddenWords
             this.button1 = new System.Windows.Forms.Button();
             this.openFileDialogWords = new System.Windows.Forms.OpenFileDialog();
             this.buttonStart = new System.Windows.Forms.Button();
+            this.progressBarProcess = new System.Windows.Forms.ProgressBar();
+            this.label2 = new System.Windows.Forms.Label();
+            this.listBox1 = new System.Windows.Forms.ListBox();
             this.SuspendLayout();
             // 
             // textBoxEnterWord
@@ -45,6 +48,7 @@ namespace SearchForForbiddenWords
             this.textBoxEnterWord.Name = "textBoxEnterWord";
             this.textBoxEnterWord.Size = new System.Drawing.Size(318, 57);
             this.textBoxEnterWord.TabIndex = 0;
+            this.textBoxEnterWord.TextChanged += new System.EventHandler(this.textBoxEnterWord_TextChanged);
             // 
             // buttonAddWord
             // 
@@ -92,12 +96,42 @@ namespace SearchForForbiddenWords
             this.buttonStart.TabIndex = 4;
             this.buttonStart.Text = "СТАРТ";
             this.buttonStart.UseVisualStyleBackColor = true;
+            this.buttonStart.Click += new System.EventHandler(this.buttonStart_Click);
+            // 
+            // progressBarProcess
+            // 
+            this.progressBarProcess.Location = new System.Drawing.Point(45, 410);
+            this.progressBarProcess.Name = "progressBarProcess";
+            this.progressBarProcess.Size = new System.Drawing.Size(815, 35);
+            this.progressBarProcess.TabIndex = 5;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label2.Location = new System.Drawing.Point(330, 380);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(232, 18);
+            this.label2.TabIndex = 6;
+            this.label2.Text = "Процесс работы программы";
+            // 
+            // listBox1
+            // 
+            this.listBox1.FormattingEnabled = true;
+            this.listBox1.ItemHeight = 18;
+            this.listBox1.Location = new System.Drawing.Point(12, 157);
+            this.listBox1.Name = "listBox1";
+            this.listBox1.Size = new System.Drawing.Size(848, 220);
+            this.listBox1.TabIndex = 7;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(900, 506);
+            this.Controls.Add(this.listBox1);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.progressBarProcess);
             this.Controls.Add(this.buttonStart);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
@@ -121,6 +155,9 @@ namespace SearchForForbiddenWords
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.OpenFileDialog openFileDialogWords;
         private System.Windows.Forms.Button buttonStart;
+        private System.Windows.Forms.ProgressBar progressBarProcess;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.ListBox listBox1;
     }
 }
 
