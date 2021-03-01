@@ -39,10 +39,11 @@ namespace Test
         {
             AddListWord();
             FindDrivers();
-            //FindFilesWhithForbiddenWords();
-            //CopyForbiddenFiles();
-            //Print();
-            //Top10();
+            FindFilesWhithForbiddenWords();
+            CopyForbiddenFiles();
+            Print();
+            Console.WriteLine();
+            Top10();
 
             Console.ReadKey();
         }
@@ -57,7 +58,8 @@ namespace Test
             //    if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
             //        drives.Add(item.RootDirectory.FullName);
             //}
-            drives.Add(@"D:\\");
+            drives.Add("D:\\");
+            drives.Add("C:\\");
             foreach (var item in drives)
             {
                 if (Directory.Exists(item))
@@ -70,7 +72,7 @@ namespace Test
 
         public static void FindTxtFiles(DirectoryInfo dir, string exp)
         {
-            tring[] notPath = { "Windows", "ProgramData", "Program Files", "Program Files (x86)",
+            string[] notPath = { "Windows", "ProgramData", "Program Files", "Program Files (x86)",
                 "$RECYCLE.BIN", "System Volume Information", "Recovery"};
             FileInfo[] files;
             int res = 0;
@@ -105,7 +107,7 @@ namespace Test
             {
                 while (!sr.EndOfStream)
                 {
-                    t = sr.ReadToEnd();
+                    t = sr.ReadToEnd().ToLower()    ;
                 }
             }
             string[] text = t.Split();
@@ -127,7 +129,7 @@ namespace Test
                 {
                     while (!sr.EndOfStream)
                     {
-                        txt = sr.ReadToEnd();
+                        txt = sr.ReadToEnd().ToLower();
                     }
                 }
                 text = txt.Split();
@@ -252,7 +254,7 @@ namespace Test
                     {
                         while (!sr.EndOfStream)
                         {
-                            txt = sr.ReadLine();
+                            txt = sr.ReadLine().ToLower();;
                         }
                     }
                     text = txt.Split();
@@ -293,6 +295,7 @@ namespace Test
 
         public static void Top10()
         {
+            Console.WriteLine("ТОП 10 рейтинга\n");
             var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
             foreach (var item in sortedListInstance)
             {
