@@ -184,7 +184,7 @@ namespace SearchForForbiddenWords
             // columnHeader2
             // 
             this.columnHeader2.Text = "Путь к файлу";
-            this.columnHeader2.Width = 431;
+            this.columnHeader2.Width = 418;
             // 
             // columnHeader3
             // 
@@ -246,7 +246,7 @@ namespace SearchForForbiddenWords
             // columnHeader5
             // 
             this.columnHeader5.Text = "Слово";
-            this.columnHeader5.Width = 175;
+            this.columnHeader5.Width = 153;
             // 
             // columnHeader6
             // 

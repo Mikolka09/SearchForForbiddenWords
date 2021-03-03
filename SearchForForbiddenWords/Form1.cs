@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Threading;
+using System.Text.RegularExpressions;
 
 
 namespace SearchForForbiddenWords
@@ -19,23 +20,21 @@ namespace SearchForForbiddenWords
         public BindingList<ForbiddenWord> listWords = new BindingList<ForbiddenWord>();
         public BindingList<string> listTxtFiles = new BindingList<string>();
         public BindingList<ForbiddenFile> listForbiddenFiles = new BindingList<ForbiddenFile>();
-        public string pathCopy = "D:\\CopyTest";
-        public string pathChange = "D:\\ChangeTest";
-        public object obj = new object();
+        public string pathCopy = "D:\\CopyForbiddenFile";
+        public string pathChange = "D:\\ChangeForbiddenFile";
         public Thread thread;
         public Thread thread1;
-        public Thread thread2;
 
         public Form1()
         {
             InitializeComponent();
-
         }
 
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
+            ClinerDirectoryforFiles(pathCopy);
+            ClinerDirectoryforFiles(pathChange);
             buttonStart.Enabled = false;
             buttonAddWord.Enabled = false;
             buttonPresStop.Enabled = false;
@@ -47,49 +46,70 @@ namespace SearchForForbiddenWords
         void ProgressProsess(object obj)
         {
             ProgressBar bar = (ProgressBar)obj;
-            int i = 0;
+            int i = 1;
             while (bar.Value < bar.Maximum)
             {
-                i++;
+
                 if (bar.InvokeRequired)
                     bar.Invoke(new Action(() => bar.Increment(i)));
+                if (listTxtFiles.Count > 0)
+                    i = (listForbiddenFiles.Count / listTxtFiles.Count) * 100;
+
             }
 
         }
 
         public void Start()
         {
-
             buttonStart.Enabled = false;
             buttonPresStop.Enabled = true;
             buttonProcess.Enabled = true;
             buttonStop.Enabled = true;
-            thread = new Thread(FindDrivers);
+            thread = new Thread(StartFind);
             thread.IsBackground = true;
-            thread.Start();
-            thread.Join();
-            thread1 = new Thread(FindFilesWhithForbiddenWords);
-            thread1.IsBackground = true;
-            thread1.Start();
-            thread1.Join();
             progressBarProcess.Step = 3;
-            thread2 = new Thread(ProgressProsess);
-            thread2.IsBackground = true;
-            thread2.Start(progressBarProcess);
+            thread1 = new Thread(ProgressProsess);
+            thread1.IsBackground = true;
+            thread.Start();
+            thread1.Start(progressBarProcess);
 
+        }
+
+        public void ClinerDirectoryforFiles(string pathTest)
+        {
+            if (Directory.Exists(pathTest))
+            {
+                DirectoryInfo dir1 = new DirectoryInfo(pathTest);
+                FileInfo[] files = dir1.GetFiles();
+                if (files.Length > 0)
+                {
+                    foreach (var item in files)
+                    {
+                        FileInfo file = new FileInfo(item.FullName);
+                        file.Delete();
+                    }
+                }
+            }
+        }
+
+        public void StartFind()
+        {
+            FindDrivers();
+            FindFilesWhithForbiddenWords();
         }
 
         public void FindDrivers()
         {
             List<string> drives = new List<string>();
-            // DriveInfo[] driveInfo = DriveInfo.GetDrives();
-            string exp = ".txt";
-            //foreach (DriveInfo item in driveInfo)
-            //{
-            //    if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
-            //        drives.Add(item.RootDirectory.FullName);
-            //}
-            drives.Add("D:\\");
+            DriveInfo[] driveInfo = DriveInfo.GetDrives();
+            string[] exp = { ".txt", ".cs", ".h" };
+            foreach (DriveInfo item in driveInfo)
+            {
+                if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
+                    drives.Add(item.RootDirectory.FullName);
+            }
+            //drives.Add("D:\\");
+            //drives.Add("C:\\");
             foreach (var item in drives)
             {
                 if (Directory.Exists(item))
@@ -101,11 +121,11 @@ namespace SearchForForbiddenWords
         }
 
 
-        public void FindTxtFiles(DirectoryInfo dir, string exp)
+        public void FindTxtFiles(DirectoryInfo dir, string[] exp)
         {
 
             string[] notPath = { "Windows", "ProgramData", "Program Files", "Program Files (x86)",
-                "$RECYCLE.BIN", "System Volume Information", "Recovery"};
+                "$RECYCLE.BIN", "System Volume Information", "Recovery", "Microsoft"};
             FileInfo[] files;
             int res = 0;
             try
@@ -115,8 +135,11 @@ namespace SearchForForbiddenWords
                                             !f.Attributes.HasFlag(FileAttributes.Temporary) && !f.Attributes.HasFlag(FileAttributes.ReadOnly));
             foreach (FileInfo item in filtered)
             {
-                if (item.Extension == exp)
-                    listTxtFiles.Add(item.FullName);
+                foreach (var it in exp)
+                {
+                    if (item.Extension == it)
+                        listTxtFiles.Add(item.FullName);
+                }
             }
             DirectoryInfo[] directories = dir.GetDirectories();
             foreach (DirectoryInfo item in directories)
@@ -130,13 +153,10 @@ namespace SearchForForbiddenWords
                 if (res == 0)
                     FindTxtFiles(item, exp);
             }
-
         }
 
         public void FindFilesWhithForbiddenWords()
         {
-
-            string[] text;
             string txt = "";
             bool right = false;
             foreach (var item in listTxtFiles)
@@ -146,52 +166,40 @@ namespace SearchForForbiddenWords
                 {
                     while (!sr.EndOfStream)
                     {
-                        txt = sr.ReadToEnd().ToLower();
+                        txt = sr.ReadToEnd();
                     }
                 }
-                text = txt.Split();
                 foreach (var it in listWords)
                 {
-                    for (int i = 0; i < text.Length; i++)
+                    string reg = "\\b" + $"{it.Name}" + "\\b";
+                    if (Regex.IsMatch(txt, reg, RegexOptions.IgnoreCase))
                     {
-                        string st = text[i].Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace(":", "")
-                            .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
-                        if (st == it.Name)
+                        if (CheckForbiddenFiles(item))
                         {
-                            if (CheckForbiddenFiles(item))
+                            int cnt = CountFile(txt, reg);
+                            listForbiddenFiles.Add(new ForbiddenFile()
                             {
-                                int cnt = CountFile(text);
-                                listForbiddenFiles.Add(new ForbiddenFile()
-                                {
-                                    Way = item,
-                                    Name = new FileInfo(item).Name,
-                                    Size = new FileInfo(item).Length.ToString(),
-                                    CountChange = cnt
-                                });
-                                right = true;
-                            }
+                                Way = item,
+                                Name = new FileInfo(item).Name,
+                                Size = new FileInfo(item).Length.ToString(),
+                                CountChange = cnt
+                            });
+                            CopyForbiddenFiles(item);
+                            right = true;
                         }
-                        if (right) break;
                     }
                     if (right) break;
                 }
             }
-            CopyForbiddenFiles();
-
         }
 
-        public int CountFile(string[] text)
+        public int CountFile(string txt, string reg)
         {
             int cnt = 0;
             foreach (var it in listWords)
             {
-                for (int i = 0; i < text.Length; i++)
-                {
-                    string st = text[i].Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace(":", "")
-                        .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
-                    if (st == it.Name)
-                        cnt++;
-                }
+                MatchCollection matchs = Regex.Matches(txt, reg, RegexOptions.IgnoreCase);
+                cnt += matchs.Count;
             }
             return cnt;
         }
@@ -206,33 +214,34 @@ namespace SearchForForbiddenWords
             return true;
         }
 
-        public void CopyForbiddenFiles()
+        public void CopyForbiddenFiles(string item)
         {
 
             int i = 1;
             string newpath = "";
+            string name = new FileInfo(item).Name;
             DirectoryInfo dir = Directory.CreateDirectory(pathCopy);
             FileInfo fileInfo;
-            foreach (var item in listForbiddenFiles)
+            fileInfo = new FileInfo(item);
+            if (fileInfo.Exists)
             {
-                fileInfo = new FileInfo(item.Way);
-                if (fileInfo.Exists)
+                if (CheckFileDublicate(pathCopy, name))
                 {
-                    if (CheckFileDublicate(pathCopy, item.Name))
+                    newpath = pathCopy + "\\" + name;
+                    try
                     {
-                        newpath = pathCopy + "\\" + item.Name;
                         fileInfo.CopyTo(newpath, true);
                     }
-                    else
-                    {
-                        newpath = pathCopy + "\\" + $"{i}" + item.Name;
-                        fileInfo.CopyTo(newpath, true);
-                        i++;
-                    }
+                    catch { }
+                }
+                else
+                {
+                    newpath = pathCopy + "\\" + $"{i}" + name;
+                    fileInfo.CopyTo(newpath, true);
+                    i++;
                 }
             }
-            ChangeForbiddenWords(pathCopy);
-
+            ChangeForbiddenWords(newpath);
         }
 
         public bool CheckFileDublicate(string path, string name)
@@ -260,49 +269,42 @@ namespace SearchForForbiddenWords
 
         public void ChangeForbiddenWords(string path)
         {
-
             DirectoryInfo dir = Directory.CreateDirectory(pathChange);
-            string[] files = Directory.GetFiles(path);
-            foreach (var item in files)
+            FileInfo file = new FileInfo(path);
+            if (file.Exists)
             {
-                FileInfo file = new FileInfo(item);
-                if (file.Exists)
+                string txt = "";
+                string[] text;
+                string change = "*******";
+                using (StreamReader sr = new StreamReader(file.FullName, Encoding.Default))
                 {
-                    string txt = "";
-                    string[] text;
-                    string change = "*******";
-                    using (StreamReader sr = new StreamReader(file.FullName, Encoding.Default))
+                    while (!sr.EndOfStream)
                     {
-                        while (!sr.EndOfStream)
-                        {
-                            txt = sr.ReadToEnd();
-                        }
+                        txt = sr.ReadToEnd(); ;
                     }
-                    text = txt.Split();
-                    foreach (var it in listWords)
+                }
+                text = txt.Split();
+                foreach (var it in listWords)
+                {
+                    string reg = "\\b" + $"{it.Name}" + "\\b";
+                    for (int i = 0; i < text.Length; i++)
                     {
-                        for (int i = 0; i < text.Length; i++)
+                        if (Regex.IsMatch(text[i], reg, RegexOptions.IgnoreCase))
                         {
-                            string st = text[i].Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace(":", "")
-                            .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
-                            if (st == it.Name)
-                            {
-                                text[i] = text[i].Replace($"{st}", $"{change}");
-                                it.Count++;
-                            }
-                        }
-                    }
-                    string newFullName = pathChange + "\\" + file.Name;
-                    using (StreamWriter sw = new StreamWriter(newFullName, false, Encoding.Default))
-                    {
-                        for (int i = 0; i < text.Length; i++)
-                        {
-                            sw.Write(text[i] + " ");
+                            text[i] = text[i].Replace($"{text[i]}", $"{change}");
+                            it.Count++;
                         }
                     }
                 }
+                string newFullName = pathChange + "\\" + file.Name;
+                using (StreamWriter sw = new StreamWriter(newFullName, false, Encoding.Default))
+                {
+                    for (int i = 0; i < text.Length; i++)
+                    {
+                        sw.Write(text[i] + " ");
+                    }
+                }
             }
-
         }
 
         public void Print()
@@ -364,7 +366,7 @@ namespace SearchForForbiddenWords
         private void buttonStart_Click(object sender, EventArgs e)
         {
             Start();
-            Thread.Sleep(2000);
+            Thread.Sleep(10000);
             Print();
         }
 
@@ -381,8 +383,6 @@ namespace SearchForForbiddenWords
                 thread.Suspend();
             if (thread1.IsAlive)
                 thread1.Suspend();
-            if (thread2.IsAlive)
-                thread2.Suspend();
             buttonStop.Enabled = false;
         }
 
@@ -392,8 +392,6 @@ namespace SearchForForbiddenWords
                 thread.Resume();
             if (thread1.IsAlive)
                 thread1.Resume();
-            if (thread2.IsAlive)
-                thread2.Resume();
             buttonStop.Enabled = true;
         }
 
@@ -403,8 +401,6 @@ namespace SearchForForbiddenWords
                 thread.Abort();
             if (thread1.IsAlive)
                 thread1.Abort();
-            if (thread2.IsAlive)
-                thread2.Abort();
             buttonPresStop.Enabled = false;
             buttonProcess.Enabled = false;
             buttonStop.Enabled = false;

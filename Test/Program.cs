@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel;
+using System.Text.RegularExpressions;
 
 namespace Test
 {
@@ -17,8 +18,8 @@ namespace Test
 
         public override string ToString()
         {
-            return $"Имя файла - {Name}\nПуть к файлу - {Way}\nРазмер файла - {Size} байт\n" +
-                $"Количество запрещенных файлов - {CountChange}";
+            return $"  Имя файла - {Name}\n  Путь к файлу - {Way}\n  Размер файла - {Size} байт\n" +
+                $"  Количество запрещенных слов - {CountChange}";
         }
     }
 
@@ -35,31 +36,51 @@ namespace Test
         public static BindingList<ForbiddenFile> listForbiddenFiles = new BindingList<ForbiddenFile>();
         public static string pathCopy = "D:\\CopyTest";
         public static string pathChange = "D:\\ChangeTest";
+
         static void Main(string[] args)
         {
+            ClinerDirectoryforFiles(pathCopy);
+            ClinerDirectoryforFiles(pathChange);
             AddListWord();
             FindDrivers();
             FindFilesWhithForbiddenWords();
-            CopyForbiddenFiles();
             Print();
             Console.WriteLine();
             Top10();
 
+            Console.WriteLine("\nДля выхода нажмите любую клавишу!");
             Console.ReadKey();
+        }
+
+        public static void ClinerDirectoryforFiles(string pathTest)
+        {
+            if (Directory.Exists(pathTest))
+            {
+                DirectoryInfo dir1 = new DirectoryInfo(pathTest);
+                FileInfo[] files = dir1.GetFiles();
+                if (files.Length > 0)
+                {
+                    foreach (var item in files)
+                    {
+                        FileInfo file = new FileInfo(item.FullName);
+                        file.Delete();
+                    }
+                }
+            }
         }
 
         public static void FindDrivers()
         {
             List<string> drives = new List<string>();
             //DriveInfo[] driveInfo = DriveInfo.GetDrives();
-            string exp = ".txt";
+            string[] exp = { ".txt", ".cs", ".h" };
             //foreach (DriveInfo item in driveInfo)
             //{
             //    if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
             //        drives.Add(item.RootDirectory.FullName);
             //}
             drives.Add("D:\\");
-            drives.Add("C:\\");
+            //drives.Add("C:\\");
             foreach (var item in drives)
             {
                 if (Directory.Exists(item))
@@ -70,7 +91,7 @@ namespace Test
             }
         }
 
-        public static void FindTxtFiles(DirectoryInfo dir, string exp)
+        public static void FindTxtFiles(DirectoryInfo dir, string[] exp)
         {
             string[] notPath = { "Windows", "ProgramData", "Program Files", "Program Files (x86)",
                 "$RECYCLE.BIN", "System Volume Information", "Recovery"};
@@ -83,8 +104,11 @@ namespace Test
                                             !f.Attributes.HasFlag(FileAttributes.Temporary) && !f.Attributes.HasFlag(FileAttributes.ReadOnly));
             foreach (FileInfo item in filtered)
             {
-                if (item.Extension == exp)
-                    listTxtFiles.Add(item.FullName);
+                foreach (var it in exp)
+                {
+                    if (item.Extension == it)
+                        listTxtFiles.Add(item.FullName);
+                }
             }
             DirectoryInfo[] directories = dir.GetDirectories();
             foreach (DirectoryInfo item in directories)
@@ -107,7 +131,7 @@ namespace Test
             {
                 while (!sr.EndOfStream)
                 {
-                    t = sr.ReadToEnd().ToLower()    ;
+                    t = sr.ReadToEnd().ToLower();
                 }
             }
             string[] text = t.Split();
@@ -119,7 +143,6 @@ namespace Test
 
         public static void FindFilesWhithForbiddenWords()
         {
-            string[] text;
             string txt = "";
             bool right = false;
             foreach (var item in listTxtFiles)
@@ -129,50 +152,40 @@ namespace Test
                 {
                     while (!sr.EndOfStream)
                     {
-                        txt = sr.ReadToEnd().ToLower();
+                        txt = sr.ReadToEnd();
                     }
                 }
-                text = txt.Split();
                 foreach (var it in listWords)
                 {
-                    for (int i = 0; i < text.Length; i++)
+                    string reg = "\\b" + $"{it.Name}" + "\\b";
+                    if (Regex.IsMatch(txt, reg, RegexOptions.IgnoreCase))
                     {
-                        string st = text[i].Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace(":", "")
-                            .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
-                        if (st == it.Name)
+                        if (CheckForbiddenFiles(item))
                         {
-                            if (CheckForbiddenFiles(item))
+                            int cnt = CountFile(txt, reg);
+                            listForbiddenFiles.Add(new ForbiddenFile()
                             {
-                                int cnt = CountFile(text);
-                                listForbiddenFiles.Add(new ForbiddenFile()
-                                {
-                                    Way = item,
-                                    Name = new FileInfo(item).Name,
-                                    Size = new FileInfo(item).Length.ToString(),
-                                    CountChange = cnt
-                                });
-                                right = true;
-                            }
+                                Way = item,
+                                Name = new FileInfo(item).Name,
+                                Size = new FileInfo(item).Length.ToString(),
+                                CountChange = cnt
+                            });
+                            CopyForbiddenFiles(item);
+                            right = true;
                         }
-                        if (right) break;
                     }
                     if (right) break;
                 }
             }
         }
 
-        public static int CountFile(string[] text)
+        public static int CountFile(string txt, string reg)
         {
             int cnt = 0;
             foreach (var it in listWords)
             {
-                for (int i = 0; i < text.Length; i++)
-                {
-                    string st = text[i].Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace(":", "")
-                        .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
-                    if (st == it.Name)
-                        cnt++;
-                }
+                MatchCollection matchs = Regex.Matches(txt, reg, RegexOptions.IgnoreCase);
+                cnt += matchs.Count;
             }
             return cnt;
         }
@@ -187,31 +200,33 @@ namespace Test
             return true;
         }
 
-        public static void CopyForbiddenFiles()
+        public static void CopyForbiddenFiles(string item)
         {
             int i = 1;
             string newpath = "";
+            string name = new FileInfo(item).Name;
             DirectoryInfo dir = Directory.CreateDirectory(pathCopy);
             FileInfo fileInfo;
-            foreach (var item in listForbiddenFiles)
+            fileInfo = new FileInfo(item);
+            if (fileInfo.Exists)
             {
-                fileInfo = new FileInfo(item.Way);
-                if (fileInfo.Exists)
+                if (CheckFileDublicate(pathCopy, name))
                 {
-                    if (CheckFileDublicate(pathCopy, item.Name))
+                    newpath = pathCopy + "\\" + name;
+                    try
                     {
-                        newpath = pathCopy + "\\" + item.Name;
                         fileInfo.CopyTo(newpath, true);
                     }
-                    else
-                    {
-                        newpath = pathCopy + "\\" + $"{i}" + item.Name;
-                        fileInfo.CopyTo(newpath, true);
-                        i++;
-                    }
+                    catch { }
+                }
+                else
+                {
+                    newpath = pathCopy + "\\" + $"{i}" + name;
+                    fileInfo.CopyTo(newpath, true);
+                    i++;
                 }
             }
-            ChangeForbiddenWords(pathCopy);
+            ChangeForbiddenWords(newpath);
         }
 
         public static bool CheckFileDublicate(string path, string name)
@@ -239,46 +254,39 @@ namespace Test
 
         public static void ChangeForbiddenWords(string path)
         {
-
             DirectoryInfo dir = Directory.CreateDirectory(pathChange);
-            string[] files = Directory.GetFiles(path);
-            foreach (var item in files)
+            FileInfo file = new FileInfo(path);
+            if (file.Exists)
             {
-                FileInfo file = new FileInfo(item);
-                if (file.Exists)
+                string txt = "";
+                string[] text;
+                string change = "*******";
+                using (StreamReader sr = new StreamReader(file.FullName, Encoding.Default))
                 {
-                    string txt = "";
-                    string[] text;
-                    string change = "*******";
-                    using (StreamReader sr = new StreamReader(file.FullName, Encoding.Default))
+                    while (!sr.EndOfStream)
                     {
-                        while (!sr.EndOfStream)
+                        txt = sr.ReadToEnd(); ;
+                    }
+                }
+                text = txt.Split();
+                foreach (var it in listWords)
+                {
+                    string reg = "\\b" + $"{it.Name}" + "\\b";
+                    for (int i = 0; i < text.Length; i++)
+                    {
+                        if (Regex.IsMatch(text[i], reg, RegexOptions.IgnoreCase))
                         {
-                            txt = sr.ReadLine().ToLower();;
+                            text[i] = text[i].Replace($"{text[i]}", $"{change}");
+                            it.Count++;
                         }
                     }
-                    text = txt.Split();
-                    foreach (var it in listWords)
+                }
+                string newFullName = pathChange + "\\" + file.Name;
+                using (StreamWriter sw = new StreamWriter(newFullName, false, Encoding.Default))
+                {
+                    for (int i = 0; i < text.Length; i++)
                     {
-                        for (int i = 0; i < text.Length; i++)
-                        {
-                            string st = text[i].Replace(",", "").Replace(".", "").Replace("!", "").Replace("?", "").Replace(":", "")
-                            .Replace(";", "").Replace("-", "").Replace("(", "").Replace(")", "");
-                            if (st == it.Name)
-                            {
-                                text[i] = text[i].Replace($"{st}", $"{change}");
-                                it.Count++;
-
-                            }
-                        }
-                    }
-                    string newFullName = pathChange + "\\" + file.Name;
-                    using (StreamWriter sw = new StreamWriter(newFullName, false, Encoding.Default))
-                    {
-                        for (int i = 0; i < text.Length; i++)
-                        {
-                            sw.Write(text[i] + " ");
-                        }
+                        sw.Write(text[i] + " ");
                     }
                 }
             }
@@ -286,20 +294,25 @@ namespace Test
 
         public static void Print()
         {
-            Console.WriteLine("Отчет по файлам\n");
+            Console.WriteLine("\tОтчет по файлам\n" +
+                              "\t---------------");
             foreach (var item in listForbiddenFiles)
             {
                 Console.WriteLine(item);
+                Console.WriteLine();
             }
         }
 
         public static void Top10()
         {
-            Console.WriteLine("ТОП 10 рейтинга\n");
+            int i = 1;
+            Console.WriteLine("   ТОП 10 рейтинга\n" +
+                              "   ---------------");
             var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
             foreach (var item in sortedListInstance)
             {
-                Console.WriteLine($"{item.Name} = {item.Count}");
+                Console.WriteLine($" {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
+                i++;
             }
         }
     }
