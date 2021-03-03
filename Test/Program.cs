@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace Test
 {
@@ -127,7 +128,7 @@ namespace Test
         public static void AddListWord()
         {
             string t = "";
-            using (StreamReader sr = new StreamReader(@"D:\\ForbiddenWords.txt", Encoding.Default))
+            using (StreamReader sr = new StreamReader(@"D:\\ForbiddenWordsTest.txt", Encoding.Default))
             {
                 while (!sr.EndOfStream)
                 {
@@ -162,7 +163,7 @@ namespace Test
                     {
                         if (CheckForbiddenFiles(item))
                         {
-                            int cnt = CountFile(txt, reg);
+                            int cnt = CountWords(txt, reg);
                             listForbiddenFiles.Add(new ForbiddenFile()
                             {
                                 Way = item,
@@ -179,7 +180,7 @@ namespace Test
             }
         }
 
-        public static int CountFile(string txt, string reg)
+        public static int CountWords(string txt, string reg)
         {
             int cnt = 0;
             foreach (var it in listWords)
@@ -187,6 +188,14 @@ namespace Test
                 MatchCollection matchs = Regex.Matches(txt, reg, RegexOptions.IgnoreCase);
                 cnt += matchs.Count;
             }
+            return cnt;
+        }
+
+        public static int CountOneWord(string txt, string reg)
+        {
+            int cnt = 0;
+            MatchCollection matchs = Regex.Matches(txt, reg, RegexOptions.IgnoreCase);
+            cnt = matchs.Count;
             return cnt;
         }
 
@@ -259,7 +268,6 @@ namespace Test
             if (file.Exists)
             {
                 string txt = "";
-                string[] text;
                 string change = "*******";
                 using (StreamReader sr = new StreamReader(file.FullName, Encoding.Default))
                 {
@@ -268,34 +276,25 @@ namespace Test
                         txt = sr.ReadToEnd(); ;
                     }
                 }
-                text = txt.Split();
                 foreach (var it in listWords)
                 {
                     string reg = "\\b" + $"{it.Name}" + "\\b";
-                    for (int i = 0; i < text.Length; i++)
-                    {
-                        if (Regex.IsMatch(text[i], reg, RegexOptions.IgnoreCase))
-                        {
-                            text[i] = text[i].Replace($"{text[i]}", $"{change}");
-                            it.Count++;
-                        }
-                    }
+                    it.Count += CountOneWord(txt, reg);
+                    txt = Regex.Replace(txt, reg, change, RegexOptions.IgnoreCase);
                 }
                 string newFullName = pathChange + "\\" + file.Name;
                 using (StreamWriter sw = new StreamWriter(newFullName, false, Encoding.Default))
                 {
-                    for (int i = 0; i < text.Length; i++)
-                    {
-                        sw.Write(text[i] + " ");
-                    }
+                    sw.WriteLine(txt);
                 }
             }
         }
 
         public static void Print()
         {
-            Console.WriteLine("\tОтчет по файлам\n" +
-                              "\t---------------");
+            Console.WriteLine("\tОтчет по найденным файлам\n" +
+                              "\t-------------------------\");
+            Console.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
             foreach (var item in listForbiddenFiles)
             {
                 Console.WriteLine(item);
@@ -306,12 +305,12 @@ namespace Test
         public static void Top10()
         {
             int i = 1;
-            Console.WriteLine("   ТОП 10 рейтинга\n" +
-                              "   ---------------");
+            Console.WriteLine("   ТОП 10 рейтинга слов\n" +
+                              "   --------------------");
             var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
             foreach (var item in sortedListInstance)
             {
-                Console.WriteLine($" {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
+                Console.WriteLine($"    {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
                 i++;
             }
         }

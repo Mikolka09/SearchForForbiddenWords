@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO;
 using System.Threading;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 
 namespace SearchForForbiddenWords
@@ -28,6 +29,12 @@ namespace SearchForForbiddenWords
         public Form1()
         {
             InitializeComponent();
+            Type type = listViewReport.GetType();
+            PropertyInfo propertyInfo = type.GetProperty("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance);
+            propertyInfo.SetValue(listViewReport, true, null);
+            Type type1 = listViewTop.GetType();
+            PropertyInfo propertyInfo1 = type1.GetProperty("DoubleBuffered", BindingFlags.NonPublic | BindingFlags.Instance);
+            propertyInfo.SetValue(listViewTop, true, null);
         }
 
 
@@ -42,7 +49,6 @@ namespace SearchForForbiddenWords
             buttonStop.Enabled = false;
         }
 
-
         void ProgressProsess(object obj)
         {
             ProgressBar bar = (ProgressBar)obj;
@@ -54,7 +60,6 @@ namespace SearchForForbiddenWords
                     bar.Invoke(new Action(() => bar.Increment(i)));
                 if (listTxtFiles.Count > 0)
                     i = (listForbiddenFiles.Count / listTxtFiles.Count) * 100;
-
             }
 
         }
@@ -66,8 +71,7 @@ namespace SearchForForbiddenWords
             buttonProcess.Enabled = true;
             buttonStop.Enabled = true;
             thread = new Thread(StartFind);
-            thread.IsBackground = true;
-            progressBarProcess.Step = 3;
+            progressBarProcess.Step = 1;
             thread1 = new Thread(ProgressProsess);
             thread1.IsBackground = true;
             thread.Start();
@@ -96,6 +100,8 @@ namespace SearchForForbiddenWords
         {
             FindDrivers();
             FindFilesWhithForbiddenWords();
+            Print();
+            SaveReportFile();
         }
 
         public void FindDrivers()
@@ -108,8 +114,6 @@ namespace SearchForForbiddenWords
                 if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
                     drives.Add(item.RootDirectory.FullName);
             }
-            //drives.Add("D:\\");
-            //drives.Add("C:\\");
             foreach (var item in drives)
             {
                 if (Directory.Exists(item))
@@ -176,7 +180,7 @@ namespace SearchForForbiddenWords
                     {
                         if (CheckForbiddenFiles(item))
                         {
-                            int cnt = CountFile(txt, reg);
+                            int cnt = CountWords(txt, reg);
                             listForbiddenFiles.Add(new ForbiddenFile()
                             {
                                 Way = item,
@@ -193,7 +197,7 @@ namespace SearchForForbiddenWords
             }
         }
 
-        public int CountFile(string txt, string reg)
+        public int CountWords(string txt, string reg)
         {
             int cnt = 0;
             foreach (var it in listWords)
@@ -201,6 +205,14 @@ namespace SearchForForbiddenWords
                 MatchCollection matchs = Regex.Matches(txt, reg, RegexOptions.IgnoreCase);
                 cnt += matchs.Count;
             }
+            return cnt;
+        }
+
+        public int CountOneWord(string txt, string reg)
+        {
+            int cnt = 0;
+            MatchCollection matchs = Regex.Matches(txt, reg, RegexOptions.IgnoreCase);
+            cnt = matchs.Count;
             return cnt;
         }
 
@@ -274,7 +286,6 @@ namespace SearchForForbiddenWords
             if (file.Exists)
             {
                 string txt = "";
-                string[] text;
                 string change = "*******";
                 using (StreamReader sr = new StreamReader(file.FullName, Encoding.Default))
                 {
@@ -283,51 +294,88 @@ namespace SearchForForbiddenWords
                         txt = sr.ReadToEnd(); ;
                     }
                 }
-                text = txt.Split();
                 foreach (var it in listWords)
                 {
                     string reg = "\\b" + $"{it.Name}" + "\\b";
-                    for (int i = 0; i < text.Length; i++)
-                    {
-                        if (Regex.IsMatch(text[i], reg, RegexOptions.IgnoreCase))
-                        {
-                            text[i] = text[i].Replace($"{text[i]}", $"{change}");
-                            it.Count++;
-                        }
-                    }
+                    it.Count += CountOneWord(txt, reg);
+                    txt = Regex.Replace(txt, reg, change, RegexOptions.IgnoreCase);
                 }
                 string newFullName = pathChange + "\\" + file.Name;
                 using (StreamWriter sw = new StreamWriter(newFullName, false, Encoding.Default))
                 {
-                    for (int i = 0; i < text.Length; i++)
-                    {
-                        sw.Write(text[i] + " ");
-                    }
+                    sw.WriteLine(txt);
+                }
+            }
+        }
+
+        public void SaveReportFile()
+        {
+            string pathFile = "D:\\reportFile.txt";
+            using (StreamWriter sw = new StreamWriter(pathFile, false, Encoding.Default))
+            {
+                sw.WriteLine("\tОтчет по найденным файлам\n" +
+                             "\t-------------------------");
+                sw.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
+                foreach (var item in listForbiddenFiles)
+                {
+                    sw.WriteLine(item);
+                    sw.WriteLine();
+                }
+                sw.WriteLine("\n");
+                int i = 1;
+                sw.WriteLine("   ТОП 10 рейтинга слов\n" +
+                             "   --------------------");
+                var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
+                foreach (var item in sortedListInstance)
+                {
+                    sw.WriteLine($"    {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
+                    i++;
                 }
             }
         }
 
         public void Print()
         {
+            int i = 0;
             foreach (var item in listForbiddenFiles)
             {
                 ListViewItem it = new ListViewItem(item.Name);
                 it.SubItems.Add(item.Way);
                 it.SubItems.Add(item.Size);
                 it.SubItems.Add(item.CountChange.ToString());
-                listViewReport.Items.Add(it);
+                if (listViewReport.InvokeRequired)
+                {
+                    listViewReport.Invoke(new Action(() =>
+                    {
+                        listViewReport.BeginUpdate();
+                        listViewReport.Items.Add(it);
+                        listViewReport.EndUpdate();
+                        labelCountFile.Text = (i++).ToString();
+                    }));
+                    Thread.Sleep(50);
+                }
             }
             Top10();
         }
 
         public void Top10()
         {
+            int i = 1;
             var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
             foreach (var item in sortedListInstance)
             {
-                ListViewItem it = new ListViewItem(item.Name);
+                ListViewItem it = new ListViewItem(i.ToString());
+                it.SubItems.Add(item.Name);
                 it.SubItems.Add(item.Count.ToString());
-                listViewTop.Items.Add(it);
+                if (listViewTop.InvokeRequired)
+                    listViewTop.Invoke(new Action(() =>
+                    {
+                        listViewTop.BeginUpdate();
+                        listViewTop.Items.Add(it);
+                        listViewTop.EndUpdate();
+                    }));
+                Thread.Sleep(100);
+                i++;
             }
         }
 
@@ -366,8 +414,6 @@ namespace SearchForForbiddenWords
         private void buttonStart_Click(object sender, EventArgs e)
         {
             Start();
-            Thread.Sleep(10000);
-            Print();
         }
 
         private void textBoxEnterWord_TextChanged(object sender, EventArgs e)
@@ -397,10 +443,16 @@ namespace SearchForForbiddenWords
 
         private void buttonStop_Click(object sender, EventArgs e)
         {
-            if (thread.IsAlive)
+            if (thread != null)
+            {
                 thread.Abort();
-            if (thread1.IsAlive)
+                thread.Join(500);
+            }
+            if (thread1 != null)
+            {
                 thread1.Abort();
+                thread1.Join(500);
+            }
             buttonPresStop.Enabled = false;
             buttonProcess.Enabled = false;
             buttonStop.Enabled = false;
@@ -410,6 +462,7 @@ namespace SearchForForbiddenWords
         private void buttonExit_Click(object sender, EventArgs e)
         {
             Close();
+            buttonStop_Click(this, new EventArgs());
         }
     }
 
@@ -422,8 +475,8 @@ namespace SearchForForbiddenWords
 
         public override string ToString()
         {
-            return $"Имя файла - {Name} \nПуть к файлу - {Way} \nРазмер файла - {Size} байт \n" +
-                 $"Количество запрещенных файлов - {CountChange}";
+            return $"  Имя файла - {Name}\n  Путь к файлу - {Way}\n  Размер файла - {Size} байт\n" +
+                $"  Количество запрещенных слов - {CountChange}";
         }
     }
 
