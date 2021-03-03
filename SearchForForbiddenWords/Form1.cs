@@ -49,6 +49,7 @@ namespace SearchForForbiddenWords
             buttonPresStop.Enabled = false;
             buttonProcess.Enabled = false;
             buttonStop.Enabled = false;
+            buttonSaveReport.Enabled = false;
         }
 
         void ProgressProsess(object obj)
@@ -57,7 +58,7 @@ namespace SearchForForbiddenWords
             int i = 1;
             while (bar.Value < bar.Maximum)
             {
-
+                Thread.Sleep(120);
                 if (bar.InvokeRequired)
                     bar.Invoke(new Action(() => bar.Increment(i)));
                 if (listTxtFiles.Count > 0)
@@ -74,11 +75,9 @@ namespace SearchForForbiddenWords
             buttonStop.Enabled = true;
             thread = new Thread(StartFind);
             progressBarProcess.Step = 1;
-            thread1 = new Thread(ProgressProsess);
-            thread1.IsBackground = true;
+            //thread1 = new Thread(ProgressProsess);
             thread.Start();
-            thread1.Start(progressBarProcess);
-
+            //thread1.Start(progressBarProcess);
         }
 
         public void ClinerDirectoryforFiles(string pathTest)
@@ -112,10 +111,10 @@ namespace SearchForForbiddenWords
 
         public void StartFind()
         {
+            ProgressProsess(progressBarProcess);
             FindDrivers();
             FindFilesWhithForbiddenWords();
             Print();
-            SaveReportFile();
         }
 
         public void FindDrivers()
@@ -322,32 +321,6 @@ namespace SearchForForbiddenWords
             }
         }
 
-        public void SaveReportFile()
-        {
-            string pathFile = "D:\\reportFile.txt";
-            using (StreamWriter sw = new StreamWriter(pathFile, false, Encoding.Default))
-            {
-                sw.WriteLine("\tОтчет по найденным файлам\n" +
-                             "\t-------------------------");
-                sw.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
-                foreach (var item in listForbiddenFiles)
-                {
-                    sw.WriteLine(item);
-                    sw.WriteLine();
-                }
-                sw.WriteLine("\n");
-                int i = 1;
-                sw.WriteLine("   ТОП 10 рейтинга слов\n" +
-                             "   --------------------");
-                var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
-                foreach (var item in sortedListInstance)
-                {
-                    sw.WriteLine($"    {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
-                    i++;
-                }
-            }
-        }
-
         public void Print()
         {
             int i = 0;
@@ -396,7 +369,8 @@ namespace SearchForForbiddenWords
 
         private void buttonOpenFile_Click(object sender, EventArgs e)
         {
-            openFileDialogWords.Filter = "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt";
+            openFileDialogWords.Filter = "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt|Формат файлов CS Developer(*.cs)|*.cs|" +
+                                          "Файл заголовка C/C++(*.h)|*.h";
             if (openFileDialogWords.ShowDialog() == DialogResult.OK)
             {
                 using (StreamReader sr = new StreamReader(openFileDialogWords.FileName, Encoding.Default))
@@ -406,6 +380,37 @@ namespace SearchForForbiddenWords
                         textBoxEnterWord.Text = sr.ReadToEnd();
                     }
                 }
+            }
+        }
+
+        private void buttonSaveReport_Click(object sender, EventArgs e)
+        {
+            saveFileDialogReport.Filter = "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt|Формат файлов CS Developer(*.cs)|*.cs|" +
+                                          "Файл заголовка C/C++(*.h)|*.h";
+            if (saveFileDialogReport.ShowDialog() == DialogResult.OK)
+            {
+                using (StreamWriter sw = new StreamWriter(saveFileDialogReport.FileName, false, Encoding.Default))
+                {
+                    sw.WriteLine("\tОтчет по найденным файлам\n" +
+                                 "\t-------------------------");
+                    sw.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
+                    foreach (var item in listForbiddenFiles)
+                    {
+                        sw.WriteLine(item);
+                        sw.WriteLine();
+                    }
+                    sw.WriteLine("\n");
+                    int i = 1;
+                    sw.WriteLine("   ТОП 10 рейтинга слов\n" +
+                                 "   --------------------");
+                    var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
+                    foreach (var item in sortedListInstance)
+                    {
+                        sw.WriteLine($"    {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
+                        i++;
+                    }
+                }
+                MessageBox.Show("Отчет сохранен в файл!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -427,7 +432,10 @@ namespace SearchForForbiddenWords
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            Start();
+            Start();    
+            buttonSaveReport.Enabled = true;
+            buttonStart.Enabled = false;
+           
         }
 
         private void textBoxEnterWord_TextChanged(object sender, EventArgs e)
@@ -441,8 +449,8 @@ namespace SearchForForbiddenWords
         {
             if (thread.IsAlive)
                 thread.Suspend();
-            if (thread1.IsAlive)
-                thread1.Suspend();
+            //if (thread1.IsAlive)
+            //    thread1.Suspend();
             buttonStop.Enabled = false;
         }
 
@@ -450,8 +458,8 @@ namespace SearchForForbiddenWords
         {
             if (thread.IsAlive)
                 thread.Resume();
-            if (thread1.IsAlive)
-                thread1.Resume();
+            //if (thread1.IsAlive)
+            //    thread1.Resume();
             buttonStop.Enabled = true;
         }
 
@@ -524,6 +532,7 @@ namespace SearchForForbiddenWords
             listViewReport.Items.Clear();
             AddToListForbiddenFile(sortedListInstance);
         }
+
 
     }
 

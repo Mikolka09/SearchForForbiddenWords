@@ -55,6 +55,8 @@ namespace SearchForForbiddenWords
             this.label4 = new System.Windows.Forms.Label();
             this.labelCountFile = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
+            this.buttonSaveReport = new System.Windows.Forms.Button();
+            this.saveFileDialogReport = new System.Windows.Forms.SaveFileDialog();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -305,11 +307,24 @@ namespace SearchForForbiddenWords
             this.label5.TabIndex = 18;
             this.label5.Text = "ОТЧЕТ ПО ФАЙЛАМ С ЗАПРЕЩЕННЫМИ СЛОВАМИ";
             // 
+            // buttonSaveReport
+            // 
+            this.buttonSaveReport.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
+            this.buttonSaveReport.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buttonSaveReport.Location = new System.Drawing.Point(12, 509);
+            this.buttonSaveReport.Name = "buttonSaveReport";
+            this.buttonSaveReport.Size = new System.Drawing.Size(175, 33);
+            this.buttonSaveReport.TabIndex = 19;
+            this.buttonSaveReport.Text = "Сохранить в файл";
+            this.buttonSaveReport.UseVisualStyleBackColor = false;
+            this.buttonSaveReport.Click += new System.EventHandler(this.buttonSaveReport_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 552);
+            this.Controls.Add(this.buttonSaveReport);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.labelCountFile);
             this.Controls.Add(this.label4);
@@ -364,6 +379,8 @@ namespace SearchForForbiddenWords
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Label labelCountFile;
         private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.Button buttonSaveReport;
+        private System.Windows.Forms.SaveFileDialog saveFileDialogReport;
     }
 }
 

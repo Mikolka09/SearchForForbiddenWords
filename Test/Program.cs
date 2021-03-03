@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 using System.IO;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
-using System.Globalization;
+using System.Threading;
+using System.Diagnostics;
 
 namespace Test
 {
@@ -35,22 +36,105 @@ namespace Test
         public static BindingList<ForbiddenWord> listWords = new BindingList<ForbiddenWord>();
         public static BindingList<string> listTxtFiles = new BindingList<string>();
         public static BindingList<ForbiddenFile> listForbiddenFiles = new BindingList<ForbiddenFile>();
-        public static string pathCopy = "D:\\CopyTest";
-        public static string pathChange = "D:\\ChangeTest";
+        public static string pathCopy = "D:\\CopyForbiddenFile";
+        public static string pathChange = "D:\\ChangeForbiddenFile";
+        public static int required = 1;
+        public static string words = "";
+        public static string path = "";
 
         static void Main(string[] args)
         {
+            Semaphore s = null;
+            try
+            {
+                s = Semaphore.OpenExisting("MyApplication");
+            }
+            catch (Exception) { }
+            if (s == null)
+                s = new Semaphore(required, required, "MyApplication");
+            if (!s.WaitOne(10))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.SetCursorPosition(20,20);
+                Console.WriteLine("Извините, стоит ограничение на одно открытие окна!");
+                Console.ForegroundColor = ConsoleColor.White;
+                Console.ReadKey();
+                Process.GetCurrentProcess().Kill();
+            }
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("\n\n\tДОБРО ПОЖАЛОВАТЬ В ПРОГРАММУ ПО ПОИСКУ ЗАПРЕЩЕННЫХ СЛОВ НА КОМПЬЮТЕРЕ\n" +
+                                  "\t---------------------------------------------------------------------\n\n");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\t\tПодождите, пожалуйста, идет загрузка приложения\n");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.Write("\t\t\t");
+            for (int i = 0; i < 30; i++)
+            {
+                Console.Write("#");
+                Thread.Sleep(200);
+            }
+            Console.Clear();
+            CapProgram();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\tВведите список запрещенных слов для поиска:\n" +
+                              "\t\t1. Ввести в ручную с клавиатуры\n\t\t2. Загрузить список с файла\n");
+            Console.Write("\tСделайте выбор: ");
+            Console.ForegroundColor = ConsoleColor.White;
+            int var = Convert.ToInt32(Console.ReadLine());
+            Console.Clear();
+            CapProgram();
+            switch (var)
+            {
+                case 1:
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.Write("\tВведите список запрещенных слов через пробел: ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    words = Console.ReadLine();
+                    string[] text = words.Split();
+                    foreach (var item in text)
+                    {
+                        listWords.Add(new ForbiddenWord() { Name = item.ToLower() });
+                    }
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\tСлова добавлены в список!");
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine("\tПодождите минутку, идет поиск и составление отчета!");
+                    Thread.Sleep(4000);
+                    Console.ForegroundColor = ConsoleColor.White;
+                    break;
+                case 2:
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.Write("\tВведите полный путь к файлу: ");
+                    Console.ForegroundColor = ConsoleColor.White;
+                    path = Console.ReadLine();
+                    AddListWord(path);
+                    break;
+                default:
+                    break;
+            }
+            StartProgram();
+            Console.WriteLine("\nДля выхода нажмите любую клавишу!");
+            Console.ReadKey();
+        }
+
+        public static void StartProgram()
+        {
             ClinerDirectoryforFiles(pathCopy);
             ClinerDirectoryforFiles(pathChange);
-            AddListWord();
             FindDrivers();
             FindFilesWhithForbiddenWords();
             Print();
-            Console.WriteLine();
-            Top10();
+            SaveReportFile();
+        }
 
-            Console.WriteLine("\nДля выхода нажмите любую клавишу!");
-            Console.ReadKey();
+        public static void CapProgram()
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("\n\t\t\"ПОИСК ЗАПРЕЩЕННЫХ СЛОВ\"\n" +
+                                "\t\t ------------------------\n\n");
         }
 
         public static void ClinerDirectoryforFiles(string pathTest)
@@ -73,15 +157,13 @@ namespace Test
         public static void FindDrivers()
         {
             List<string> drives = new List<string>();
-            //DriveInfo[] driveInfo = DriveInfo.GetDrives();
+            DriveInfo[] driveInfo = DriveInfo.GetDrives();
             string[] exp = { ".txt", ".cs", ".h" };
-            //foreach (DriveInfo item in driveInfo)
-            //{
-            //    if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
-            //        drives.Add(item.RootDirectory.FullName);
-            //}
-            drives.Add("D:\\");
-            //drives.Add("C:\\");
+            foreach (DriveInfo item in driveInfo)
+            {
+                if (item.DriveType == DriveType.Fixed || item.DriveType == DriveType.Removable)
+                    drives.Add(item.RootDirectory.FullName);
+            }
             foreach (var item in drives)
             {
                 if (Directory.Exists(item))
@@ -95,7 +177,7 @@ namespace Test
         public static void FindTxtFiles(DirectoryInfo dir, string[] exp)
         {
             string[] notPath = { "Windows", "ProgramData", "Program Files", "Program Files (x86)",
-                "$RECYCLE.BIN", "System Volume Information", "Recovery"};
+                "$RECYCLE.BIN", "System Volume Information", "Recovery", "Microsoft"};
             FileInfo[] files;
             int res = 0;
             try
@@ -125,10 +207,10 @@ namespace Test
             }
         }
 
-        public static void AddListWord()
+        public static void AddListWord(string path)
         {
             string t = "";
-            using (StreamReader sr = new StreamReader(@"D:\\ForbiddenWordsTest.txt", Encoding.Default))
+            using (StreamReader sr = new StreamReader(path, Encoding.Default))
             {
                 while (!sr.EndOfStream)
                 {
@@ -140,6 +222,14 @@ namespace Test
             {
                 listWords.Add(new ForbiddenWord() { Name = item });
             }
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("\tСлова загружены и добавлены в список!");
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("\tПодождите минутку, идет поиск и составление отчета!");
+            Thread.Sleep(4000);
+            Console.ForegroundColor = ConsoleColor.White;
         }
 
         public static void FindFilesWhithForbiddenWords()
@@ -292,27 +382,71 @@ namespace Test
 
         public static void Print()
         {
+            Console.Clear();
+            CapProgram();
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("\tОтчет по найденным файлам\n" +
                               "\t-------------------------");
+            Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
+            Console.ForegroundColor = ConsoleColor.Cyan;
             foreach (var item in listForbiddenFiles)
             {
                 Console.WriteLine(item);
                 Console.WriteLine();
             }
+            Top10();
         }
 
         public static void Top10()
         {
             int i = 1;
+            Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("   ТОП 10 рейтинга слов\n" +
                               "   --------------------");
             var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
+            Console.ForegroundColor = ConsoleColor.Cyan;
             foreach (var item in sortedListInstance)
             {
                 Console.WriteLine($"    {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
                 i++;
             }
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.WriteLine();
+        }
+
+        public static void SaveReportFile()
+        {
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.Write("\tДля сохранения отчета введите имя файла: ");
+            Console.ForegroundColor = ConsoleColor.White;
+            string nameFile = Console.ReadLine() + ".txt";
+            string pathFile = "D:\\" + nameFile;
+            using (StreamWriter sw = new StreamWriter(pathFile, false, Encoding.Default))
+            {
+                sw.WriteLine("\tОтчет по найденным файлам\n" +
+                             "\t-------------------------");
+                sw.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
+                foreach (var item in listForbiddenFiles)
+                {
+                    sw.WriteLine(item);
+                    sw.WriteLine();
+                }
+                sw.WriteLine("\n");
+                int i = 1;
+                sw.WriteLine("   ТОП 10 рейтинга слов\n" +
+                             "   --------------------");
+                var sortedListInstance = new BindingList<ForbiddenWord>(listWords.OrderByDescending(x => x.Count).ToList());
+                foreach (var item in sortedListInstance)
+                {
+                    sw.WriteLine($"    {i}. {item.Name.PadRight(10)} = {item.Count.ToString().PadRight(4)}");
+                    i++;
+                }
+            }
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"\tОтчет сохранен в файл! Путь к файлу - {pathFile}");
+            Console.ForegroundColor = ConsoleColor.White;
         }
     }
 }
