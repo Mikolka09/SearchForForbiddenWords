@@ -293,7 +293,7 @@ namespace Test
         public static void Print()
         {
             Console.WriteLine("\tОтчет по найденным файлам\n" +
-                              "\t-------------------------\");
+                              "\t-------------------------");
             Console.WriteLine($"  Количество файлов - {listForbiddenFiles.Count}\n");
             foreach (var item in listForbiddenFiles)
             {

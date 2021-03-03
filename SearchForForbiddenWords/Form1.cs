@@ -25,6 +25,8 @@ namespace SearchForForbiddenWords
         public string pathChange = "D:\\ChangeForbiddenFile";
         public Thread thread;
         public Thread thread1;
+        public BindingList<ForbiddenFile> sortedListInstance;
+        bool sort = true;
 
         public Form1()
         {
@@ -93,6 +95,18 @@ namespace SearchForForbiddenWords
                         file.Delete();
                     }
                 }
+            }
+        }
+
+        public void AddToListForbiddenFile(BindingList<ForbiddenFile> sortedListInstance)
+        {
+            foreach (var item in sortedListInstance)
+            {
+                ListViewItem it = new ListViewItem(item.Name);
+                it.SubItems.Add(item.Way);
+                it.SubItems.Add(item.Size.ToString());
+                it.SubItems.Add(item.CountChange.ToString());
+                listViewReport.Items.Add(it);
             }
         }
 
@@ -185,7 +199,7 @@ namespace SearchForForbiddenWords
                             {
                                 Way = item,
                                 Name = new FileInfo(item).Name,
-                                Size = new FileInfo(item).Length.ToString(),
+                                Size = (int)new FileInfo(item).Length,
                                 CountChange = cnt
                             });
                             CopyForbiddenFiles(item);
@@ -341,7 +355,7 @@ namespace SearchForForbiddenWords
             {
                 ListViewItem it = new ListViewItem(item.Name);
                 it.SubItems.Add(item.Way);
-                it.SubItems.Add(item.Size);
+                it.SubItems.Add(item.Size.ToString());
                 it.SubItems.Add(item.CountChange.ToString());
                 if (listViewReport.InvokeRequired)
                 {
@@ -464,13 +478,60 @@ namespace SearchForForbiddenWords
             Close();
             buttonStop_Click(this, new EventArgs());
         }
+
+        private void listViewReport_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            if (e.Column == 0 && sort == true)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderByDescending(x => x.Name).ToList());
+                sort = false;
+            }
+            else if (e.Column == 0 && sort == false)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderBy(x => x.Name).ToList());
+                sort = true;
+            }
+            if (e.Column == 1 && sort == true)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderByDescending(x => x.Way).ToList());
+                sort = false;
+            }
+            else if (e.Column == 1 && sort == false)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderBy(x => x.Way).ToList());
+                sort = true;
+            }
+            if (e.Column == 2 && sort == true)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderByDescending(x => x.Size).ToList());
+                sort = false;
+            }
+            else if (e.Column == 2 && sort == false)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderBy(x => x.Size).ToList());
+                sort = true;
+            }
+            if (e.Column == 3 && sort == true)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderByDescending(x => x.CountChange).ToList());
+                sort = false;
+            }
+            else if (e.Column == 3 && sort == false)
+            {
+                sortedListInstance = new BindingList<ForbiddenFile>(listForbiddenFiles.OrderBy(x => x.CountChange).ToList());
+                sort = true;
+            }
+            listViewReport.Items.Clear();
+            AddToListForbiddenFile(sortedListInstance);
+        }
+
     }
 
     public class ForbiddenFile
     {
         public string Way;
         public string Name;
-        public string Size;
+        public int Size;
         public int CountChange;
 
         public override string ToString()

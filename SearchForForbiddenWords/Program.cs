@@ -10,25 +10,41 @@ namespace SearchForForbiddenWords
 {
     static class Program
     {
+        public static int required = 1;
         /// <summary>
         /// Главная точка входа для приложения.
         /// </summary>
         [STAThread]
         static void Main()
         {
+            Semaphore s = null;
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+            //if (MessageBox.Show("Открыть как гафический интерфейс (ДА) или консольно(НЕТ)", "Сообщение об открытии",
+            //           MessageBoxButtons.YesNo, MessageBoxIcon.Information) == DialogResult.Yes)
+            //{
+                //using (s = new Semaphore(required, required, "MyApplication"))
+                //{
+                //    if (s.WaitOne(TimeSpan.FromSeconds(0.5)))
 #if DEBUG
-            //CreateConsole();
+                        CreateConsole();
 #endif
-            using (Semaphore s = new Semaphore(1, 1, "MyApplication"))
+            //    else
+            //        MessageBox.Show("Извините, копии приложения открывать запрещено!", "WARNING",
+            //            MessageBoxButtons.OK, MessageBoxIcon.Warning);                //}
+            //}
+            //else
+            //{
+            using (s = new Semaphore(required, required, "MyApplication"))
             {
                 if (s.WaitOne(TimeSpan.FromSeconds(0.5)))
                     Application.Run(new Form1());
                 else
-                    MessageBox.Show("Извините, копии приложения открывать запрещено!", "WARNING", 
+                    MessageBox.Show("Извините, копии приложения открывать запрещено!", "WARNING",
                         MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+
+
         }
 
         static void CreateConsole()
