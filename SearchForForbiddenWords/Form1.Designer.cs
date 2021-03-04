@@ -285,7 +285,7 @@ namespace SearchForForbiddenWords
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(669, 424);
+            this.label4.Location = new System.Drawing.Point(659, 424);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(151, 18);
             this.label4.TabIndex = 16;
@@ -295,7 +295,7 @@ namespace SearchForForbiddenWords
             // 
             this.labelCountFile.AutoSize = true;
             this.labelCountFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelCountFile.Location = new System.Drawing.Point(826, 424);
+            this.labelCountFile.Location = new System.Drawing.Point(816, 424);
             this.labelCountFile.Name = "labelCountFile";
             this.labelCountFile.Size = new System.Drawing.Size(17, 18);
             this.labelCountFile.TabIndex = 17;
@@ -349,11 +349,11 @@ namespace SearchForForbiddenWords
             // 
             this.label6.AutoSize = true;
             this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label6.Location = new System.Drawing.Point(258, 10);
+            this.label6.Location = new System.Drawing.Point(248, 10);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(175, 17);
+            this.label6.Size = new System.Drawing.Size(186, 17);
             this.label6.TabIndex = 22;
-            this.label6.Text = "ДОБАВЛЕНЫЕ СЛОВА";
+            this.label6.Text = "ДОБАВЛЕННЫЕ СЛОВА";
             // 
             // Form1
             // 
