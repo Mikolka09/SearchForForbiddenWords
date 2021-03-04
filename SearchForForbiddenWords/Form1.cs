@@ -420,18 +420,19 @@ namespace SearchForForbiddenWords
 
         private void buttonAddWord_Click(object sender, EventArgs e)
         {
-
             string[] text = textBoxEnterWord.Text.Split();
             foreach (var item in text)
             {
-                listWords.Add(new ForbiddenWord() { Name = item.ToLower() });
+                listWords.Add(new ForbiddenWord() { Name = item });
             }
-            if (listWords.Count != 0)
+            listBoxWords.Items.Clear();
+            foreach (var item in listWords)
             {
-                MessageBox.Show("Запрещенные слова добавлены в список!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                textBoxEnterWord.Text = "";
-                buttonStart.Enabled = true;
+                listBoxWords.Items.Add(item.Name);
             }
+            MessageBox.Show("Запрещенные слова добавлены в список!", "Сообщение", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            textBoxEnterWord.Text = "";
+            buttonStart.Enabled = true;
         }
 
         private void buttonStart_Click(object sender, EventArgs e)
@@ -547,6 +548,7 @@ namespace SearchForForbiddenWords
             buttonStop_Click(this, new EventArgs());
             listViewReport.Items.Clear();
             listViewTop.Items.Clear();
+            listBoxWords.Items.Clear();
             labelCountFile.Text = "0";
             listWords.Clear();
             listForbiddenFiles.Clear();
@@ -556,6 +558,7 @@ namespace SearchForForbiddenWords
             buttonRestart.Enabled = false;
             buttonStart.Enabled = false;
         }
+
     }
 
     public class ForbiddenFile

@@ -58,6 +58,8 @@ namespace SearchForForbiddenWords
             this.buttonSaveReport = new System.Windows.Forms.Button();
             this.saveFileDialogReport = new System.Windows.Forms.SaveFileDialog();
             this.buttonRestart = new System.Windows.Forms.Button();
+            this.listBoxWords = new System.Windows.Forms.ListBox();
+            this.label6 = new System.Windows.Forms.Label();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -115,7 +117,7 @@ namespace SearchForForbiddenWords
             // 
             this.buttonStart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.buttonStart.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStart.Location = new System.Drawing.Point(584, 509);
+            this.buttonStart.Location = new System.Drawing.Point(672, 509);
             this.buttonStart.Name = "buttonStart";
             this.buttonStart.Size = new System.Drawing.Size(83, 33);
             this.buttonStart.TabIndex = 4;
@@ -127,7 +129,7 @@ namespace SearchForForbiddenWords
             // 
             this.progressBarProcess.Location = new System.Drawing.Point(12, 462);
             this.progressBarProcess.Name = "progressBarProcess";
-            this.progressBarProcess.Size = new System.Drawing.Size(776, 31);
+            this.progressBarProcess.Size = new System.Drawing.Size(846, 31);
             this.progressBarProcess.TabIndex = 5;
             // 
             // label2
@@ -144,7 +146,7 @@ namespace SearchForForbiddenWords
             // 
             this.buttonPresStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(224)))), ((int)(((byte)(192)))));
             this.buttonPresStop.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonPresStop.Location = new System.Drawing.Point(69, 42);
+            this.buttonPresStop.Location = new System.Drawing.Point(18, 35);
             this.buttonPresStop.Name = "buttonPresStop";
             this.buttonPresStop.Size = new System.Drawing.Size(140, 29);
             this.buttonPresStop.TabIndex = 8;
@@ -156,7 +158,7 @@ namespace SearchForForbiddenWords
             // 
             this.buttonProcess.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.buttonProcess.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonProcess.Location = new System.Drawing.Point(18, 95);
+            this.buttonProcess.Location = new System.Drawing.Point(32, 70);
             this.buttonProcess.Name = "buttonProcess";
             this.buttonProcess.Size = new System.Drawing.Size(113, 29);
             this.buttonProcess.TabIndex = 9;
@@ -168,7 +170,7 @@ namespace SearchForForbiddenWords
             // 
             this.buttonStop.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(192)))));
             this.buttonStop.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonStop.Location = new System.Drawing.Point(149, 95);
+            this.buttonStop.Location = new System.Drawing.Point(34, 108);
             this.buttonStop.Name = "buttonStop";
             this.buttonStop.Size = new System.Drawing.Size(108, 28);
             this.buttonStop.TabIndex = 10;
@@ -187,7 +189,7 @@ namespace SearchForForbiddenWords
             this.listViewReport.Location = new System.Drawing.Point(9, 191);
             this.listViewReport.Name = "listViewReport";
             this.listViewReport.ShowItemToolTips = true;
-            this.listViewReport.Size = new System.Drawing.Size(776, 230);
+            this.listViewReport.Size = new System.Drawing.Size(849, 230);
             this.listViewReport.TabIndex = 11;
             this.listViewReport.UseCompatibleStateImageBehavior = false;
             this.listViewReport.View = System.Windows.Forms.View.Details;
@@ -219,7 +221,7 @@ namespace SearchForForbiddenWords
             // 
             this.buttonExit.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
             this.buttonExit.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonExit.Location = new System.Drawing.Point(695, 509);
+            this.buttonExit.Location = new System.Drawing.Point(768, 509);
             this.buttonExit.Name = "buttonExit";
             this.buttonExit.Size = new System.Drawing.Size(90, 33);
             this.buttonExit.TabIndex = 12;
@@ -232,9 +234,10 @@ namespace SearchForForbiddenWords
             this.groupBox1.Controls.Add(this.buttonPresStop);
             this.groupBox1.Controls.Add(this.buttonProcess);
             this.groupBox1.Controls.Add(this.buttonStop);
-            this.groupBox1.Location = new System.Drawing.Point(262, 13);
+            this.groupBox1.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.groupBox1.Location = new System.Drawing.Point(429, 19);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(263, 148);
+            this.groupBox1.Size = new System.Drawing.Size(176, 148);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Работа с процессом";
@@ -243,7 +246,7 @@ namespace SearchForForbiddenWords
             // 
             this.label3.AutoSize = true;
             this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label3.Location = new System.Drawing.Point(604, 9);
+            this.label3.Location = new System.Drawing.Point(674, 9);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(119, 18);
             this.label3.TabIndex = 14;
@@ -256,7 +259,7 @@ namespace SearchForForbiddenWords
             this.columnHeader6,
             this.columnHeader7});
             this.listViewTop.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.listViewTop.Location = new System.Drawing.Point(541, 31);
+            this.listViewTop.Location = new System.Drawing.Point(611, 31);
             this.listViewTop.Name = "listViewTop";
             this.listViewTop.ShowItemToolTips = true;
             this.listViewTop.Size = new System.Drawing.Size(247, 130);
@@ -282,7 +285,7 @@ namespace SearchForForbiddenWords
             // 
             this.label4.AutoSize = true;
             this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.label4.Location = new System.Drawing.Point(585, 424);
+            this.label4.Location = new System.Drawing.Point(669, 424);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(151, 18);
             this.label4.TabIndex = 16;
@@ -292,7 +295,7 @@ namespace SearchForForbiddenWords
             // 
             this.labelCountFile.AutoSize = true;
             this.labelCountFile.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.labelCountFile.Location = new System.Drawing.Point(742, 424);
+            this.labelCountFile.Location = new System.Drawing.Point(826, 424);
             this.labelCountFile.Name = "labelCountFile";
             this.labelCountFile.Size = new System.Drawing.Size(17, 18);
             this.labelCountFile.TabIndex = 17;
@@ -324,7 +327,7 @@ namespace SearchForForbiddenWords
             // 
             this.buttonRestart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
             this.buttonRestart.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
-            this.buttonRestart.Location = new System.Drawing.Point(353, 509);
+            this.buttonRestart.Location = new System.Drawing.Point(391, 509);
             this.buttonRestart.Name = "buttonRestart";
             this.buttonRestart.Size = new System.Drawing.Size(97, 33);
             this.buttonRestart.TabIndex = 20;
@@ -332,11 +335,33 @@ namespace SearchForForbiddenWords
             this.buttonRestart.UseVisualStyleBackColor = false;
             this.buttonRestart.Click += new System.EventHandler(this.buttonRestart_Click);
             // 
+            // listBoxWords
+            // 
+            this.listBoxWords.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.listBoxWords.FormattingEnabled = true;
+            this.listBoxWords.ItemHeight = 18;
+            this.listBoxWords.Location = new System.Drawing.Point(251, 31);
+            this.listBoxWords.Name = "listBoxWords";
+            this.listBoxWords.Size = new System.Drawing.Size(162, 130);
+            this.listBoxWords.TabIndex = 21;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.label6.Location = new System.Drawing.Point(258, 10);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(175, 17);
+            this.label6.TabIndex = 22;
+            this.label6.Text = "ДОБАВЛЕНЫЕ СЛОВА";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 552);
+            this.ClientSize = new System.Drawing.Size(870, 552);
+            this.Controls.Add(this.label6);
+            this.Controls.Add(this.listBoxWords);
             this.Controls.Add(this.buttonRestart);
             this.Controls.Add(this.buttonSaveReport);
             this.Controls.Add(this.label5);
@@ -396,6 +421,8 @@ namespace SearchForForbiddenWords
         private System.Windows.Forms.Button buttonSaveReport;
         private System.Windows.Forms.SaveFileDialog saveFileDialogReport;
         private System.Windows.Forms.Button buttonRestart;
+        private System.Windows.Forms.ListBox listBoxWords;
+        private System.Windows.Forms.Label label6;
     }
 }
 
