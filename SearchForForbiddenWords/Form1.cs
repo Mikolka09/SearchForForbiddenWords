@@ -26,7 +26,8 @@ namespace SearchForForbiddenWords
         public Thread thread;
         public Thread thread1;
         public BindingList<ForbiddenFile> sortedListInstance;
-        bool sort = true;
+        public bool sort = true;
+        public int countFile = 0;
 
         public Form1()
         {
@@ -50,19 +51,20 @@ namespace SearchForForbiddenWords
             buttonProcess.Enabled = false;
             buttonStop.Enabled = false;
             buttonSaveReport.Enabled = false;
+            buttonRestart.Enabled = false;
         }
 
         void ProgressProsess(object obj)
         {
             ProgressBar bar = (ProgressBar)obj;
-            int i = 1;
+            int i = 0;
             while (bar.Value < bar.Maximum)
             {
-                Thread.Sleep(120);
+
+                if (listForbiddenFiles.Count > 0)
+                    i = (countFile / listForbiddenFiles.Count) * 100;
                 if (bar.InvokeRequired)
                     bar.Invoke(new Action(() => bar.Increment(i)));
-                if (listTxtFiles.Count > 0)
-                    i = (listForbiddenFiles.Count / listTxtFiles.Count) * 100;
             }
 
         }
@@ -75,9 +77,10 @@ namespace SearchForForbiddenWords
             buttonStop.Enabled = true;
             thread = new Thread(StartFind);
             progressBarProcess.Step = 1;
-            //thread1 = new Thread(ProgressProsess);
+            thread1 = new Thread(ProgressProsess);
+            thread1.IsBackground = true;
             thread.Start();
-            //thread1.Start(progressBarProcess);
+            thread1.Start(progressBarProcess);
         }
 
         public void ClinerDirectoryforFiles(string pathTest)
@@ -111,7 +114,6 @@ namespace SearchForForbiddenWords
 
         public void StartFind()
         {
-            ProgressProsess(progressBarProcess);
             FindDrivers();
             FindFilesWhithForbiddenWords();
             Print();
@@ -318,6 +320,7 @@ namespace SearchForForbiddenWords
                 {
                     sw.WriteLine(txt);
                 }
+                countFile++;
             }
         }
 
@@ -385,6 +388,7 @@ namespace SearchForForbiddenWords
 
         private void buttonSaveReport_Click(object sender, EventArgs e)
         {
+            saveFileDialogReport.DefaultExt = ".txt";
             saveFileDialogReport.Filter = "Все файлы (*.*)|*.*|Текстовые файлы (*.txt)|*.txt|Формат файлов CS Developer(*.cs)|*.cs|" +
                                           "Файл заголовка C/C++(*.h)|*.h";
             if (saveFileDialogReport.ShowDialog() == DialogResult.OK)
@@ -432,10 +436,11 @@ namespace SearchForForbiddenWords
 
         private void buttonStart_Click(object sender, EventArgs e)
         {
-            Start();    
+            Start();
             buttonSaveReport.Enabled = true;
+            buttonRestart.Enabled = true;
             buttonStart.Enabled = false;
-           
+
         }
 
         private void textBoxEnterWord_TextChanged(object sender, EventArgs e)
@@ -449,18 +454,22 @@ namespace SearchForForbiddenWords
         {
             if (thread.IsAlive)
                 thread.Suspend();
-            //if (thread1.IsAlive)
-            //    thread1.Suspend();
+            if (thread1.IsAlive)
+                thread1.Suspend();
             buttonStop.Enabled = false;
+            buttonPresStop.Enabled = false;
+            buttonProcess.Enabled = true;
         }
 
         private void buttonProcess_Click(object sender, EventArgs e)
         {
             if (thread.IsAlive)
                 thread.Resume();
-            //if (thread1.IsAlive)
-            //    thread1.Resume();
+            if (thread1.IsAlive)
+                thread1.Resume();
             buttonStop.Enabled = true;
+            buttonPresStop.Enabled = true;
+            buttonProcess.Enabled = false;
         }
 
         private void buttonStop_Click(object sender, EventArgs e)
@@ -533,7 +542,17 @@ namespace SearchForForbiddenWords
             AddToListForbiddenFile(sortedListInstance);
         }
 
-
+        private void buttonRestart_Click(object sender, EventArgs e)
+        {
+            buttonStop_Click(this, new EventArgs());
+            listViewReport.Items.Clear();
+            listViewTop.Items.Clear();
+            labelCountFile.Text = "0";
+            progressBarProcess.Value = 0;
+            buttonSaveReport.Enabled = false;
+            buttonRestart.Enabled = false;
+            buttonStart.Enabled = false;
+        }
     }
 
     public class ForbiddenFile

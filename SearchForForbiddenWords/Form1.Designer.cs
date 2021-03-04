@@ -57,6 +57,7 @@ namespace SearchForForbiddenWords
             this.label5 = new System.Windows.Forms.Label();
             this.buttonSaveReport = new System.Windows.Forms.Button();
             this.saveFileDialogReport = new System.Windows.Forms.SaveFileDialog();
+            this.buttonRestart = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -73,7 +74,7 @@ namespace SearchForForbiddenWords
             // 
             // buttonAddWord
             // 
-            this.buttonAddWord.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(192)))), ((int)(((byte)(255)))));
+            this.buttonAddWord.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(255)))), ((int)(((byte)(192)))));
             this.buttonAddWord.Font = new System.Drawing.Font("Tahoma", 7.8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
             this.buttonAddWord.Location = new System.Drawing.Point(151, 127);
             this.buttonAddWord.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -236,7 +237,7 @@ namespace SearchForForbiddenWords
             this.groupBox1.Size = new System.Drawing.Size(263, 148);
             this.groupBox1.TabIndex = 13;
             this.groupBox1.TabStop = false;
-            this.groupBox1.Text = "Работа с потоком";
+            this.groupBox1.Text = "Работа с процессом";
             // 
             // label3
             // 
@@ -319,11 +320,24 @@ namespace SearchForForbiddenWords
             this.buttonSaveReport.UseVisualStyleBackColor = false;
             this.buttonSaveReport.Click += new System.EventHandler(this.buttonSaveReport_Click);
             // 
+            // buttonRestart
+            // 
+            this.buttonRestart.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(255)))));
+            this.buttonRestart.Font = new System.Drawing.Font("Tahoma", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(204)));
+            this.buttonRestart.Location = new System.Drawing.Point(353, 509);
+            this.buttonRestart.Name = "buttonRestart";
+            this.buttonRestart.Size = new System.Drawing.Size(97, 33);
+            this.buttonRestart.TabIndex = 20;
+            this.buttonRestart.Text = "РЕСТАРТ";
+            this.buttonRestart.UseVisualStyleBackColor = false;
+            this.buttonRestart.Click += new System.EventHandler(this.buttonRestart_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 552);
+            this.Controls.Add(this.buttonRestart);
             this.Controls.Add(this.buttonSaveReport);
             this.Controls.Add(this.label5);
             this.Controls.Add(this.labelCountFile);
@@ -381,6 +395,7 @@ namespace SearchForForbiddenWords
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.Button buttonSaveReport;
         private System.Windows.Forms.SaveFileDialog saveFileDialogReport;
+        private System.Windows.Forms.Button buttonRestart;
     }
 }
 
