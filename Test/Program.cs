@@ -55,7 +55,7 @@ namespace Test
             if (!s.WaitOne(10))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.SetCursorPosition(20,20);
+                Console.SetCursorPosition(20,10);
                 Console.WriteLine("Извините, стоит ограничение на одно открытие окна!");
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.ReadKey();

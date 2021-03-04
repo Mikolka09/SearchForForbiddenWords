@@ -548,6 +548,9 @@ namespace SearchForForbiddenWords
             listViewReport.Items.Clear();
             listViewTop.Items.Clear();
             labelCountFile.Text = "0";
+            listWords.Clear();
+            listForbiddenFiles.Clear();
+            listTxtFiles.Clear();
             progressBarProcess.Value = 0;
             buttonSaveReport.Enabled = false;
             buttonRestart.Enabled = false;
